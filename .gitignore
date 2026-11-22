@@ -9,3 +9,5 @@ server/.env.*
 *.log
 coverage/
 .DS_Store
+.vercel
+.env*
