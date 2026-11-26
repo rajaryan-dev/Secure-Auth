@@ -6,7 +6,11 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
-const passwordRules = body('password').isLength({ min: 8 }).matches(/[A-Z]/).matches(/[a-z]/).matches(/[0-9]/);
+const passwordRules = body('password')
+  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+  .matches(/[A-Z]/).withMessage('Password must include an uppercase letter')
+  .matches(/[a-z]/).withMessage('Password must include a lowercase letter')
+  .matches(/[0-9]/).withMessage('Password must include a number');
 
 router.post('/register', authLimiter, body('fullName').trim().isLength({ min: 2, max: 100 }), body('email').isEmail().normalizeEmail(), passwordRules, body('terms').isBoolean(), auth.register);
 router.post('/login', authLimiter, body('email').isEmail().normalizeEmail(), body('password').isLength({ min: 1 }), auth.login);

@@ -22,6 +22,10 @@ beforeEach(async () => { await User.deleteMany({}); });
 describe('SecureAuth critical flows', () => {
   it('registers, hashes passwords, and rejects duplicate emails', async () => {
     const payload = { fullName:'Test User', email:'Test@example.com', password:'Secure123', terms:true };
+    const weakPassword = await request(app).post('/api/auth/register').send({ ...payload, password:'@ashifhuss3' });
+    expect(weakPassword.status).toBe(400);
+    expect(weakPassword.body.message).toBe('Password must include an uppercase letter');
+
     const first = await request(app).post('/api/auth/register').send(payload);
     expect(first.status).toBe(201);
     const user = await User.findOne({ email:'test@example.com' }).select('+password');

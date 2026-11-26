@@ -14,7 +14,21 @@ export function createApp() {
   const app = express();
   app.set('trust proxy', 1);
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-  app.use(cors({ origin(origin, cb) { const allowed = (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map(v => v.trim()); if (!origin || allowed.includes(origin)) cb(null, true); else cb(new Error('Origin not allowed')); }, credentials: true }));
+  app.use(cors({
+    origin(origin, cb) {
+      const configured = (process.env.CLIENT_URL || 'http://localhost:5173')
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean);
+      const vercelOrigins = [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL]
+        .filter(Boolean)
+        .map(host => `https://${host}`);
+      const allowed = [...configured, ...vercelOrigins];
+      if (!origin || allowed.includes(origin)) cb(null, true);
+      else cb(new Error('Origin not allowed'));
+    },
+    credentials: true
+  }));
   app.use(express.json({ limit: '16kb' }));
   app.use(cookieParser());
   app.use(issueCsrf);
